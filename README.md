@@ -3,7 +3,7 @@
 #### The repository contains various Python scripts for docket cleaning and report generating
 
 There are also test scripts for future projects. They will be denoted with "test" in the name.
-Feel free to push changes as you see fit. Make sure your chnanges are well documented
+Feel free to push changes as you see fit. Make sure your changes are well documented
 
 #### Dependencies
 There are no special packages used in most of these scripts if an ML package is needed
