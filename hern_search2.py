@@ -43,6 +43,7 @@ def get_exclude_terms():
             print('entry not recognized')
             more = 'y'
 
+########### set artifacts to search and how many from user###############
 def get_artifacts():
     more = "y"
     while more == 'y':
@@ -59,18 +60,70 @@ def get_artifacts():
             print('entry not recognized')
             more = "y"
 
+############### set 2 term range & proximity###########################
 
-#set artifacts to search and how many from user
+#currently only has functionality for 1 proximity search
+def Get_Prox_Words():
+    group1 = []
+    more = "y"
+    while more == "y":
+        fstword = input('insert 1st word')
+        sndword = input('insert 2nd word')
+        group1.extend((fstword,sndword))
+        prox = input('insert # of words apart')
+        ans = input('Is this this correct \
+                1st word is ' + str(fstword) +'\
+                2nd word is ' + str(sndword) +'\
+                proximity is ' + str(prox) )
+        if ans == "y":
+            more = "n"
+            pass
+        elif ans == "n":
+            ans = "n"
+            continue
+        elif ans != "y" or "n":
+            print('entry not recognized')
+            continue
+    Get_Prox_Words.prox = prox
+    Get_Prox_Words.fstword = fstword
+    Get_Prox_Words.sndword = sndword
 
-#set 2 term range & proximity
-# class Proximity:
-#     group1 = []
-#     more = 'y'
-#     while more == 'y'
-#     fstword = input('insert 1st word')
-#     sndword = input('insert 2nd word')
-#     group1.extend((fstword,sndword))
-#     prox = input('insert # of words apart')
+######### creates list of word indexes ####################################
+# splits a long string into a list of strings then iterates through, "i" will
+
+def Find_Index():
+    index_list = []
+    for i in range(len(mesh_test.split())):
+        if re.search('infect' + regext, mesh_test.split()[i]):
+            index_list.append(i)
+        else:
+            pass
+    return index_list
+
+
+########creates range objects from indexes to grab sub strings ngrams away#####
+#listofin is from Find_Index
+#ranges is from prox of Get_Prox_Words
+def Range_Maker(listofin, ranges):
+    range_list = []
+    for i in listofin:
+        begin = i - (ranges)
+        end = i + (ranges + 1)
+        range_add = range(begin, end)
+        range_list.append(range_add)
+    return range_list
+
+########### Takes range object and creates sub strings from relevant list######
+#rel_list is long string that is being ex_searched
+# range_object is from Range_Maker
+def Grab_Sub_Strings(rel_list, range_object):
+    new_strings = []
+    for i in range_object: #Ranger holds 2 range objects for search window
+        window = "" # window in compile string in range
+        for k in i:
+            window += (rel_list.split()[k] + " ")
+        new_strings.append(window)
+    return new_strings
 
 #locate text column.  User must insure text is 3rd column
 #load csv
