@@ -10,11 +10,9 @@ import pandas as pd, numpy as np
 import re
 import csv
 
-terms = []
-ex_terms = []
-af = {}
 #set terms to search from user
-def get_terms():
+def Get_Terms():
+    terms = []
     more = "y"
     while more == 'y':
         new_term = input('insert term to search')
@@ -27,9 +25,11 @@ def get_terms():
         elif more.lower() != 'y' or 'n':
             print('entry not recognized')
             more = 'y'
+    Get_Terms.terms = terms
 
 # set exclusionary TermsList
-def get_exclude_terms():
+def Get_Exclude_Terms():
+    ex_terms = []
     more = "y"
     while more == 'y':
         new_term = input('insert terms to EXCLUDE from results')
@@ -42,9 +42,10 @@ def get_exclude_terms():
         elif more.lower() != 'y' or 'n':
             print('entry not recognized')
             more = 'y'
-
+    Get_Exclude_Terms.ex_terms = ex_terms
 ########### set artifacts to search and how many from user###############
-def get_artifacts():
+def Get_Artifacts():
+    af = {}
     more = "y"
     while more == 'y':
         new_art = input('insert artifact to search')
@@ -59,11 +60,13 @@ def get_artifacts():
         elif more.lower() != "y" or "n":
             print('entry not recognized')
             more = "y"
+    Get_Artifacts.af = af
 
 ############### set 2 term range & proximity###########################
 
 #currently only has functionality for 1 proximity search
 def Get_Prox_Words():
+    print("Proximity search")
     group1 = []
     more = "y"
     while more == "y":
@@ -90,20 +93,23 @@ def Get_Prox_Words():
 
 ######### creates list of word indexes ####################################
 # splits a long string into a list of strings then iterates through, "i" will
+#search_string is long string from medical procedure description
+#fstword is from Get_Prox_Words.  Use Get_Prox_Words.fstword
 
-def Find_Index():
+def Find_Index(search_string, fstword):
+    regext = '[a-z]+'
     index_list = []
-    for i in range(len(mesh_test.split())):
-        if re.search('infect' + regext, mesh_test.split()[i]):
+    for i in range(len(search_string.split())):
+        if re.search(fstword + regext, mesh_test.split()[i]):
             index_list.append(i)
         else:
             pass
-    return index_list
+    Find_Index.index_list = index_list
 
 
 ########creates range objects from indexes to grab sub strings ngrams away#####
-#listofin is from Find_Index
-#ranges is from prox of Get_Prox_Words
+#listofin is from Find_Index.index_list
+#ranges is from prox of Get_Prox_Words.prox
 def Range_Maker(listofin, ranges):
     range_list = []
     for i in listofin:
@@ -111,19 +117,27 @@ def Range_Maker(listofin, ranges):
         end = i + (ranges + 1)
         range_add = range(begin, end)
         range_list.append(range_add)
-    return range_list
+    Range_Maker.range_list = range_list
 
 ########### Takes range object and creates sub strings from relevant list######
-#rel_list is long string that is being ex_searched
-# range_object is from Range_Maker
-def Grab_Sub_Strings(rel_list, range_object):
+#search_string is long string that is being searched
+#range_object is from Range_Maker.range_list
+def Grab_Sub_Strings(search_string, range_object):
     new_strings = []
     for i in range_object: #Ranger holds 2 range objects for search window
         window = "" # window in compile string in range
         for k in i:
-            window += (rel_list.split()[k] + " ")
+            window += (search_string.split()[k] + " ")
         new_strings.append(window)
-    return new_strings
+    Grab_Sub_Strings.new_strings = new_strings  #you will need list of
+                                                #new_strings later on
+
+
+#****************##******##
+#****************####**####
+#****************##**##**##
+#****************##******##
+#****************##******## AIN
 
 #locate text column.  User must insure text is 3rd column
 #load csv
@@ -131,8 +145,12 @@ def Grab_Sub_Strings(rel_list, range_object):
 user_excel = str(input('insert path of file'))
 doc = pd.read_csv(user_excel + '.csv')
 
-get_terms()
-get_exclude_terms()
+Get_Terms()
+ans = input("Do you want to add an exlusionary term?")
+if ans == "y":
+    Get_Exclude_Terms()
+elif ans == "n":
+    pass
 
 rel = str(doc.columns[2])  #relevant column name as a string
 doc["Possible"] = pd.Series(dtype = str)  #possible columns
