@@ -1,11 +1,12 @@
-"""Initial Search Program for hernia mesh docket. Looking to accomplish
+"""
+Initial Search Program for hernia mesh docket. Looking to accomplish
 4 functions.
     1.) Spell check medical terms,
     2.) User input keyword search (exact and like)
     3.) Artifact search and quantity, ie "*" for 2x
     4.) Range search of 2 words within x # of words
 
-    """
+"""
 import pandas as pd, numpy as np
 import re
 import csv

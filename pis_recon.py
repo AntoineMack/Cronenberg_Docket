@@ -1,4 +1,5 @@
-"""PIS Reconciliation -
+"""
+PIS Reconciliation -
 Scripts have 3 main functions
 1. Clean raw .txt and csv files
 2. Identify existence of client files against a master client list
@@ -11,39 +12,49 @@ from tkinter import filedialog
 
 ################ Afile clean and create dataframe ##########################
 print("Hello, make sure the Afile is a .txt file" )
-print("Hello, make sure you only import CSV UTF-8 file types for
+print("Hello, make sure you only import CSV UTF-8 file types for\
       files B, C and D")
-docket = input("What docket are you working on?")
-doc= "y"
-    while doc == "y":
-        conf = input("Confirm docket is " + str(docket))
-        if conf == "y":
-            doc = "n"
-        elif conf == "n"
-            doc = "y"
-            continue
 
-text_file = input("Which text file do you want to use for Afile?")
+ans = "n"
+while ans == "n" or ans != "y":
+    try:
+        docket = input("What docket are you working on?")
+        ans = input("Confirm docket is " + str(docket))
+    except:
+        print("input not understood")
+        continue
+    else:
+        continue
 
-with open (str(text_file), "r") as myfile:
-    raw_Afile = myfile.readlines()
+def Clean_Raw_txt():
+    root = tk.Tk()
+    root.withdraw()
 
-raw_Afile = [i.replace("\n","") for i in raw_Afile] # remove line breaks
-raw_Afile = [i.replace("_", "") for i in raw_Afile] # remove hyphens
-raw_Afile = [i for i in raw_Afile if "" != i]       # remove empty strings
+    a= True
+    while a == True:
+        try:
+            text_file = filedialog.askopenfilename()
+            with open (str(text_file), "r") as myfile:
+                raw_Afile = myfile.readlines()
+        except:
+            a = False
+        else:
+            break
 
-raw_Afile = [i for i in raw_Afile if "Received" in i] #filter for PIS
-raw_Afile = [i for i in raw_Afile if "].pdf" in i]    #remove duplicates
+    raw_Afile = [i.replace("\n","") for i in raw_Afile] # remove line breaks
+    raw_Afile = [i.replace("_", "") for i in raw_Afile] # remove hyphens
+    raw_Afile = [i for i in raw_Afile if "" != i]       # remove empty strings
+    raw_Afile = [i for i in raw_Afile if "Received" in i] #filter for PIS
+    raw_Afile = [i for i in raw_Afile if "].pdf" in i]    #remove duplicates
+    raw_Afile = [list(dict.fromkeys(raw_Afile))] #remove duplicates w/ dict method
+    Clean_Raw_txt.raw_Afile = raw_Afile
 
-raw_Afile = [list(dict.fromkeys(raw_Afile))] #remove duplicates w/ dict method
-
-
-Afile = pd.DataFrame(raw_Afile, columns = ["Received"])
+Clean_Raw_txt()
+Afile = pd.DataFrame(Clean_Raw_txt.raw_Afile, columns = ["Received"])
 case_id = pd.Series([], dtype = str)
 Afile["case_id"] = case_id
 
-
-#finding add adding case id from file name to case id row
+#finding and adding case id from file name to case_id column
 def Case_ID_Adder(df, rec_col, dest_col):
     case_pat = re.compile('\d\d\d\d\d\d')
     for i in range(len(df[rec_col])):
@@ -55,9 +66,10 @@ def Case_ID_Adder(df, rec_col, dest_col):
             print(df[rec_col][i] + " does not have a 6 digit case id")
             print("Please reconcile values and rerun the script")
             pass
+    Case_ID_Adder.df = df
 
 Case_ID_Adder(Afile, "Received", "case_id")  #A file dataframe READY
-Afile.to_csv(str(docket) + " Afile_clean.csv")
+Case_ID_Adder.df.to_csv(str(docket) + " Afile_clean.csv")
 print(str(docket) + " A file is ready! csv created")
 
 ################ Bfile clean and create dataframe ##########################
@@ -66,15 +78,15 @@ def Add_Case_docs():
     case_doc1 = input("Which file do you want to use for Bfile case_doc1?")
     while ans == "y":
         ans = input("Is there a 2nd case_doc file")
-        if ans == "y"
+        if ans == "y":
             case_doc2 = input("Which file do you want to use for case_doc2?")
             case_doc1 = pd.read_csv(str(case_doc1))  #creating dataframes
             case_doc2 = pd.read_csv(str(case_doc2),
-                        names= list(case_doc1.columns), header = 0)
-        elif ans == "n"
+                      names= list(case_doc1.columns), header = 0)
+        elif ans == "n":
             ans = "n"
         elif ans != "y" or "n":
-            print('entry no recognized')
+            print('entry not recognized')
             ans = "y"
 
 Add_Case_docs()
