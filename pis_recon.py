@@ -34,19 +34,20 @@ def Clean_Raw_txt():
     while a == True:
         try:
             text_file = filedialog.askopenfilename()
-            with open (str(text_file), "r") as myfile:
+            with open (text_file, "r") as myfile:
                 raw_Afile = myfile.readlines()
         except:
             a = False
         else:
             break
+    Clean_Raw_txt.raw_Afile = raw_Afile
 
     raw_Afile = [i.replace("\n","") for i in raw_Afile] # remove line breaks
     raw_Afile = [i.replace("_", "") for i in raw_Afile] # remove hyphens
     raw_Afile = [i for i in raw_Afile if "" != i]       # remove empty strings
     raw_Afile = [i for i in raw_Afile if "Received" in i] #filter for PIS
     raw_Afile = [i for i in raw_Afile if "].pdf" in i]    #remove duplicates
-    raw_Afile = [list(dict.fromkeys(raw_Afile))] #remove duplicates w/ dict method
+    #raw_Afile = [list(dict.fromkeys(raw_Afile))] #remove duplicates w/ dict method
     Clean_Raw_txt.raw_Afile = raw_Afile
 
 Clean_Raw_txt()
@@ -69,6 +70,8 @@ def Case_ID_Adder(df, rec_col, dest_col):
     Case_ID_Adder.df = df
 
 Case_ID_Adder(Afile, "Received", "case_id")  #A file dataframe READY
+#remove duplicate names here!!!
+#print report of how many duplicates removed
 Case_ID_Adder.df.to_csv(str(docket) + " Afile_clean.csv")
 print(str(docket) + " A file is ready! csv created")
 
