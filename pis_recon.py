@@ -12,8 +12,7 @@ from tkinter import filedialog
 
 ################ Afile clean and create dataframe ##########################
 print("Hello, make sure the Afile is a .txt file" )
-print("Hello, make sure you only import CSV UTF-8 file types for\
-      files B, C and D")
+print("Hello, make sure you only import CSV UTF-8 file types for files B, C and D")
 
 ans = "n"
 while ans == "n" or ans != "y":
@@ -33,6 +32,7 @@ def Clean_Raw_txt():
     a= True
     while a == True:
         try:
+            print("Select K Drive PIS .txt file")
             text_file = filedialog.askopenfilename()
             with open (text_file, "r") as myfile:
                 raw_Afile = myfile.readlines()
@@ -65,7 +65,8 @@ def Case_ID_Adder(df, rec_col, dest_col):
             df[dest_col][i] = str(case_id)
         except:
             print(df[rec_col][i] + " does not have a 6 digit case id")
-            print("Please reconcile values and rerun the script")
+            print("Please check Needles and reconcile value")
+            df[rec_col][i] = input("Enter correct 6 digit case id")
             pass
     Case_ID_Adder.df = df
 
@@ -122,14 +123,15 @@ for i in range(len(b_file_raw['file_path'])):
 Bfile["case_id"] = Bfile_case
 Bfile["file_path"] = Bfile_path
 
-Bfile.to_csv(str(docket) + 'Bfile_clean.csv')
+Bfile.to_csv(str(docket) + ' Bfile_clean.csv')
 print(str(docket) + " Bfile ready! csv created")
 
 ################ Cfile clean and create dataframe ##########################
 
-# basis pandas filter
-lit_file = input("which file do you want to use for Cfile LIT doc file")
-lit = pd.read_csv(str(lit_file))
+# basic pandas filter
+print("Select LIT doc file")
+lit_file = filedialog.askopenfilename()
+lit = pd.read_csv(lit_file)
 
 #
 Cfile = lit[(lit["matcode"] == "EAR") \
@@ -139,20 +141,20 @@ Cfile = lit[(lit["matcode"] == "EAR") \
 Cfile.to_csv(str(docket) + " Cfile_clean.csv")
 print(str(docket) + " Cfile ready! csv created")
 ################ Dfile clean and create dataframe ##########################
-
-portal_file = input("which file do you want to use for Dfile Portal doc file")
-port = pd.read_csv(str(portal_file))
+print("Select Portal file")
+portal_file = filedialog.askopenfilename()
+port = pd.read_csv(portal_file)
 
 port.rename(columns={"Case ID": "case_id"}, inplace = True) #consistency
 port[['case_id']].to_csv(str(docket) + " Dfile_clean.csv")
 print(str(docket) + " Dfile ready! csv created")
 ################ Master file clean  ########################################
-
-master_file = input("which file do you want to use for MASTER docket file")
+print("Select MASTER docket file")
+master_file = filedialog.askopenfilename()
 master = pd.read_csv(master_file)
 
 #convert casenum to string and "case_id" for consistency
-master = [str(i) for i in master['casenum']]
+[str(i) for i in master['casenum']]
 master.rename(columns = {"casenum":"case_id"}, inplace = True) #rename case_id
 
 master[["case_id","MDL_Client_ID", "class","last_long_name", "first_name"]]\
@@ -175,6 +177,7 @@ report["D"] = pd.Series([],dtype=str)
 
 #Adding "X" to column where file exists
 for i in range(len(report['case_id'])):
+    print(i)
     if any(Afile.case_id.isin([report['case_id'][i]])): #search Afile
         report['A'][i] = "X"
     else:
@@ -191,3 +194,7 @@ for i in range(len(report['case_id'])):
         report['D'][i] = "X"
     else:
         pass
+
+report.to_csv(str(docket) + " PIS RECON COMPLETE.csv")
+print(str(docket) + " PIS reconciliation complete")
+print("File saved as " + str(docket) + " PIS RECON COMPLETE.csv")
