@@ -138,11 +138,9 @@ def Grab_Sub_Strings(search_string, range_object):
 #****************####**####
 #****************##**##**##
 #****************##******##
-#****************##******## AIN
+#****************##******##AIN
 
 #locate text column.  User must insure text is 3rd column
-#load csv
-
 user_excel = str(input('insert path of file'))
 doc = pd.read_csv(user_excel + '.csv')
 
