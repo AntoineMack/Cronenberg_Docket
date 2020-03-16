@@ -77,40 +77,50 @@ print(str(docket) + " A file is ready! csv created")
 
 ################ Bfile clean and create dataframe ##########################
 def Add_Case_docs():
-    ans = "y"
-    case_doc1 = input("Which file do you want to use for Bfile case_doc1?")
-    while ans == "y":
-        ans = input("Is there a 2nd case_doc file")
-        if ans == "y":
-            case_doc2 = input("Which file do you want to use for case_doc2?")
-            case_doc1 = pd.read_csv(str(case_doc1))  #creating dataframes
-            case_doc2 = pd.read_csv(str(case_doc2),
-                      names= list(case_doc1.columns), header = 0)
-        elif ans == "n":
-            ans = "n"
-        elif ans != "y" or "n":
-            print('entry not recognized')
-            ans = "y"
+    root = tk.Tk()
+    root.withdraw()
+
+    a = True
+    while a == True:
+        try:
+            print("add case_doc1")
+            case_doc1 = filedialog.askopenfilename()
+            print("add case_doc2")
+            case_doc2 = filedialog.askopenfilename()
+        except:
+            a = False
+        else:
+            break
+    print("creating df")
+    case_doc1 = pd.read_csv(case_doc1)  #creating dataframes
+    case_doc2 = pd.read_csv(case_doc2 ,names= list(case_doc1.columns), header = 0)
+    Add_Case_docs.case_doc1 = case_doc1
+    Add_Case_docs.case_doc2 = case_doc2
 
 Add_Case_docs()
 
-b_file_raw = case_doc1.append(case_doc2, ignore_index = True) #appending dfs
+b_file_raw = Add_Case_docs.case_doc1.append(Add_Case_docs.case_doc2, ignore_index = True) #appending dfs
+b_file_raw.drop(columns= ['matcode', 'document_id', 'category',
+       'original_file_size', 'Staff_Created', 'Date_Added', 'date_created'], inplace = True)
 
 Bfile = pd.DataFrame({"case_id":pd.Series([], dtype=str),
                       "file_path":pd.Series([], dtype=str)}, dtype=str)
 Bfile_case = []
 Bfile_path = []
 pis_pat = re.compile('PIS')
-for i in range(len(Bfile['file_path'])):
+for i in range(len(b_file_raw['file_path'])):
 
     try:
-        found = pis_pat.search(Bfile['file_path'][i])
+        found = pis_pat.search(b_file_raw['file_path'][i])
         pis = found.group(0)
-        Bfile_case.append(all_docs['case_id'][i])
-        Bfile_path.append(all_docs['file_path'][i])
+        Bfile_case.append(b_file_raw['case_id'][i])
+        Bfile_path.append(b_file_raw['file_path'][i])
         print(i)
     except:
         pass
+
+Bfile["case_id"] = Bfile_case
+Bfile["file_path"] = Bfile_path
 
 Bfile.to_csv(str(docket) + 'Bfile_clean.csv')
 print(str(docket) + " Bfile ready! csv created")
