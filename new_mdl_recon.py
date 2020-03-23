@@ -131,9 +131,11 @@ for i in reg_test.Plaintiff_ID:
             if num_of_docs_jlg != num_of_docs_mdl:
                 issue = "X"
             else:
+                issue = ""
                 pass
             new_row = pd.DataFrame([[i, name, found_doc, num_of_docs_jlg,num_of_docs_mdl, issue]], columns = list(new_rec_mdl.columns))
             new_rec_mdl = new_rec_mdl.append(new_row)
+            new_rec_mdl.drop_duplicates(keep="first", inplace=True)
                          #### Add statement to remove duplicates after every row add
             print("new row added")
         except:
@@ -143,7 +145,7 @@ for i in reg_test.Plaintiff_ID:
     num_of_docs_jlg = 0
     for k in mdl.loc[mdl["MDLC_ID"]== i, "Document_Type"]:
         issue = ""
-        print(used_docs)
+        print("USED DOCS: ",used_docs)
         if k not in used_docs:
             try:
                 print(k, "mdl search")
@@ -157,9 +159,13 @@ for i in reg_test.Plaintiff_ID:
                 new_row2 = pd.DataFrame([[i, name, mdl_found_doc, str(num_of_docs_jlg), str(num_of_docs_mdl),
                                           issue]], columns = list(new_rec_mdl.columns))
                 new_rec_mdl = new_rec_mdl.append(new_row2)
+                new_rec_mdl.drop_duplicates(keep="first", inplace=True)
+
                 print("new MDL row added")
                           #### Add statement to remove duplicates after every row add
             except:
                 pass
+
+new_rec_mdl.drop_duplicates(subset= ["MDLC_ID", "Document_Type"], keep= "first", inplace = True)
 
 new_rec_mdl.to_csv("new_rec_mdl.csv")
