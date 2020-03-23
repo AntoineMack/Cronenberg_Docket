@@ -1,8 +1,40 @@
 import pandas as pd
 import re, csv
+import tkinter as tk
+from tkinter import filedialog
 
+"""
+The MDL Reconciler takes in 3 files
+1.) JLG submissions to the MDL
+2.) MDL submission Report
+3.) MDL Plaintiff Registration
+
+Output:  Reconciler will output csv with mdlc_id, Plaintiff name,
+Document Type, 2 columns indicating the # of a given document types
+in the JLG submission and MDL submission.  Last column is called
+"Issue", it marks an "X" to JLG submitted files that are not equal
+to MDL reported files.
+"""
+
+
+### Import JLG submission
+root = tk.Tk()
+root.withdraw()
+
+a = True
+while a == True:
+    try:
+        print("Add JLG submission file")
+        jlg = filedialog.askopenfilename()
+        print("JLG submission added")
+    except:
+        a = False
+    else:
+        break
+
+# jlg = pd.read_csv("JLG Submitted.csv") ***for local use
 #add new columns to jlg sub
-jlg = pd.read_csv("JLG Submitted.csv")
+jlg = pd.read_csv(jlg)
 mdlc_id = pd.Series([], dtype= str)
 docid = pd.Series([], dtype= str)
 doctype = pd.Series([], dtype= str)
@@ -74,47 +106,67 @@ def File_Name_Parser(df, filename_col):
             pass
 
 File_Name_Parser(jlg, "Filename")
+
+### Add 5 digit case_id reconciler. ie if len(case_id) != 6
 jlg.case_id.iloc[49]= '334456'
 jlg.loc[jlg["case_id"]=="309384"]
 
-mdl = pd.read_csv("MDL Sub Submission Summary Report_2885_lf (3).csv")
-reg = pd.read_csv("MDL Plaintiff Registration Submission Status Report_2885_lf (4).csv")
+# Import MDL submission
+root = tk.Tk()
+root.withdraw()
+a = True
+while a == True:
+    try:
+        print("Add MDL submission file")
+        mdl = filedialog.askopenfilename()
+        print("MDL submission added")
+    except:
+        a = False
+    else:
+        break
+mdl = pd.read_csv(mdl)
 
-#simple df.replace method
+# Import MDL Plaintiff Registration
+root = tk.Tk()
+root.withdraw()
+a = True
+while a == True:
+    try:
+        print("Add MDL Plaintiff Registration file")
+        reg = filedialog.askopenfilename()
+        print("MDL Plaintiff Registration added")
+    except:
+        a = False
+    else:
+        break
+reg = pd.read_csv(reg)
+#mdl = pd.read_csv("MDL Sub Submission Summary Report_2885_lf (3).csv") ***for local use
+#reg = pd.read_csv("MDL Plaintiff Registration Submission Status Report_2885_lf (4).csv") ***for local use
+
+#Changing names of columns for continuity
 replace_dic = {"Audiogram or Other Hearing Test outside the military":"Audiogram_Other Test",
                "Disability Records":"Disability Record", "VA Form 10-2354a":"VA Form 10-2364a",
                "Other":"OTHER"}
 mdl.replace(replace_dic, inplace=True)
-
-jlg.columns
 jlg.rename(columns={"Document Type":"Document_Type"}, inplace = True)
-
-mdl.columns
 mdl.rename(columns={"MDLC ID":"MDLC_ID",'Plaintiff Name':'Plaintiff_Name',
                     'Law Firm':'Law_Firm','Filed Case Plaintiff':'Filed_Case_Plaintiff',
                     'Document Type':'Document_Type', "Date Uploaded":"Date_Uploaded"}, inplace = True)
 
 #convert JLG id to strings
 jlg["MDLC_ID"] = [int(i) for i in jlg["MDLC_ID"]]
-
-#creating RECON MDL
-column_list = ['MDLC_ID', 'Plaintiff_Name','Document_Type',
-       'MDL_Document ID', 'Date_Uploaded','DocID', "In_JLG",
-        "In_MDL"]
-rec_mdl = pd.DataFrame([["","","","","","","",""]],columns=column_list)
-
+# reducing reg to relevant columns
 reg = reg[["Plaintiff_Name", "Plaintiff_ID"]]
-reg.head()
-reg_test = reg.head(100)
-
+#reg_test = reg.head(100) ***for testing and local use
+#build new_rec_mdl DataFrame
 column_list = ['MDLC_ID', 'Plaintiff_Name','Document_Type',
        '#_doc_in_JLG', '#_docs_in_MDL','Issue']
 new_rec_mdl = pd.DataFrame([["","","","","",""]],columns=column_list)
 
 #creating NEW RECON MDL
-for i in reg_test.Plaintiff_ID:
-    name_index = reg_test.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].index[0]
-    name = reg_test.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].get(name_index)
+for i in reg.Plaintiff_ID:
+    name_index = reg.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].index[0]
+    name = reg.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].get(name_index)
     print(name)
     index_flag = 0
     used_docs = []
