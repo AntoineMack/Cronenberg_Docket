@@ -9,6 +9,7 @@ import pandas as pd, numpy as np
 import csv, re
 import tkinter as tk
 from tkinter import filedialog
+from datetime import datetime as dt
 
 ################ Afile clean and create dataframe ##########################
 print("Hello, make sure the Afile is a .txt file" )
@@ -24,6 +25,8 @@ while ans == "n" or ans != "y":
         continue
     else:
         continue
+
+
 
 def Clean_Raw_txt():
     root = tk.Tk()
@@ -50,31 +53,55 @@ def Clean_Raw_txt():
     #raw_Afile = [list(dict.fromkeys(raw_Afile))] #remove duplicates w/ dict method
     Clean_Raw_txt.raw_Afile = raw_Afile
 
-Clean_Raw_txt()
-Afile = pd.DataFrame(Clean_Raw_txt.raw_Afile, columns = ["Received"])
-case_id = pd.Series([], dtype = str)
-Afile["case_id"] = case_id
+if input("Is A file a txt or csv?") == "txt":
+    Clean_Raw_txt()
+    Afile = pd.DataFrame(Clean_Raw_txt.raw_Afile, columns = ["Received"])
+    case_id = pd.Series([], dtype = str)
+    Afile["case_id"] = case_id
 
-#finding and adding case id from file name to case_id column
-def Case_ID_Adder(df, rec_col, dest_col):
-    case_pat = re.compile('\d\d\d\d\d\d')
-    for i in range(len(df[rec_col])):
+    def Case_ID_Adder(df, rec_col, dest_col):
+        case_pat = re.compile('\d\d\d\d\d\d')
+        for i in range(len(df[rec_col])):
+            try:
+                found = case_pat.search(df[rec_col][i])
+                case_id = found.group(0)
+                df[dest_col][i] = str(case_id)
+            except:
+                print(df[rec_col][i] + " does not have a 6 digit case id")
+                print("Please check Needles and reconcile value")
+                df[rec_col][i] = input("Enter correct 6 digit case id")
+                pass
+        Case_ID_Adder.df = df
+
+    Case_ID_Adder(Afile, "Received", "case_id")  #A file dataframe READY
+    #remove duplicate names here!!!
+    #print report of how many duplicates removed
+    Case_ID_Adder.df.to_csv(str(docket) + " Afile_clean.csv")
+    print(str(docket) + " A file is ready! csv created")
+else:
+    root = tk.Tk()
+    root.withdraw()
+
+    a = True
+    while a == True:
         try:
-            found = case_pat.search(df[rec_col][i])
-            case_id = found.group(0)
-            df[dest_col][i] = str(case_id)
+            print("Add A file in csv format")
+            Afile = filedialog.askopenfilename()
+            case_col = input("What is the exact name of case id column?")
+            file_col = input("what is the exact name of file path column")
+            Afile = pd.read_csv(Afile)
+            Afile["case_id"] = pd.Series([], dtype = str)
+            Afile["Received"] = pd.Series([], dtype = str)
+            Afile["case_id"] = Afile[case_col]
+            Afile["Received"] = Afile[file_col]
+            Afile.to_csv(str(docket) + " Afile_clean.csv")
+            print(str(docket) + " A file is ready! csv created")
         except:
-            print(df[rec_col][i] + " does not have a 6 digit case id")
-            print("Please check Needles and reconcile value")
-            df[rec_col][i] = input("Enter correct 6 digit case id")
-            pass
-    Case_ID_Adder.df = df
+            a = False
+        else:
+            break
+#finding and adding case id from file name to case_id column
 
-Case_ID_Adder(Afile, "Received", "case_id")  #A file dataframe READY
-#remove duplicate names here!!!
-#print report of how many duplicates removed
-Case_ID_Adder.df.to_csv(str(docket) + " Afile_clean.csv")
-print(str(docket) + " A file is ready! csv created")
 
 ################ Bfile clean and create dataframe ##########################
 def Add_Case_docs():
@@ -195,6 +222,7 @@ for i in range(len(report['case_id'])):
     else:
         pass
 
-report.to_csv(str(docket) + " PIS RECON COMPLETE.csv")
+now = dt.now()
+report.to_csv(str(docket) + " PIS RECON " + now.strftime("%H:%M:%S").replace(":","_")+".csv")
 print(str(docket) + " PIS reconciliation complete")
-print("File saved as " + str(docket) + " PIS RECON COMPLETE.csv")
+print("File saved as " + str(docket) + " PIS RECON "+ now.strftime("%H:%M:%S").replace(":","_")+".csv")
