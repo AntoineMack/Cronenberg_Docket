@@ -2,6 +2,7 @@ import pandas as pd
 import re, csv
 import tkinter as tk
 from tkinter import filedialog
+from datetime import datetime as dt
 
 """
 The MDL Reconciler takes in 3 files
@@ -164,6 +165,7 @@ column_list = ['MDLC_ID', 'Plaintiff_Name','Document_Type',
 new_rec_mdl = pd.DataFrame([["","","","","",""]],columns=column_list)
 
 #creating NEW RECON MDL
+
 for i in reg.Plaintiff_ID:
     name_index = reg.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].index[0]
     name = reg.loc[reg["Plaintiff_ID"] == i, "Plaintiff_Name"].get(name_index)
@@ -214,10 +216,49 @@ for i in reg.Plaintiff_ID:
                 new_rec_mdl.drop_duplicates(keep="first", inplace=True)
 
                 print("new MDL row added")
-                          #### Add statement to remove duplicates after every row add
             except:
                 pass
+        else:
+            pass
 
+
+# #Check clients not YET listed in MDL REG
+ninety_day = [i for i in list(jlg.MDLC_ID.unique()) if i not in list(reg.Plaintiff_ID.unique())]
+for n in ninety_day:
+    index_flag3 = 0
+    for p in jlg.loc[jlg["MDLC_ID"]== n, "Document_Type"]:
+        try:
+            indexer3 = jlg.loc[jlg['MDLC_ID']==n, "Document_Type"].index[index_flag3]
+            found_doc = jlg.loc[jlg['MDLC_ID']==n, "Document_Type"].get(indexer3)
+            num_of_docs_jlg = len(jlg.loc[(jlg["MDLC_ID"]==n) & (jlg["Document_Type"]== str(found_doc))])
+            index_flag3 += 1
+            num_of_docs_mdl = len(mdl.loc[(mdl["MDLC_ID"]==n) & (mdl["Document_Type"]== str(found_doc))])
+            if num_of_docs_jlg != num_of_docs_mdl:
+                issue = "X"
+            else:
+                issue = ""
+                pass
+            new_row = pd.DataFrame([[n, "N/A", found_doc, num_of_docs_jlg,num_of_docs_mdl, issue]], columns = list(new_rec_mdl.columns))
+            new_rec_mdl = new_rec_mdl.append(new_row)
+            new_rec_mdl.drop_duplicates(keep="first", inplace=True)
+                         #### Add statement to remove duplicates after every row add
+            print("new row added")
+        except:
+            pass
+    index_flag3 = 0
+
+not_in_mdl = [i for i in list(jlg.MDLC_ID.unique()) if i not in list(mdl.MDLC_ID.unique())]
+not_in_jlg = [i for i in list(mdl.MDLC_ID.unique()) if i not in list(jlg.MDLC_ID.unique())]
+
+###UPDATE print out of # clients not represented in MDL Registration
 new_rec_mdl.drop_duplicates(subset= ["MDLC_ID", "Document_Type"], keep= "first", inplace = True)
 
-new_rec_mdl.to_csv("new_rec_mdl.csv")
+### Add date stamp to export filename
+now = dt.now()
+new_rec_mdl.to_csv("MDL_Recon" + now.strftime("%H_%M_%S")+ ".csv")
+print("MDL_Recon" + now.strftime("%H_%M_%S")+ ".csv", " is saved")
+
+
+print(len(ninety_day), " clients in JLG sub but NOT IN MDL Plaintiff Registration")
+print(len(not_in_mdl), " clients in JLG sub but NOT IN MDL sub")
+print(len(not_in_jlg), " clients in MDL sub but NOT IN JLG sub")
