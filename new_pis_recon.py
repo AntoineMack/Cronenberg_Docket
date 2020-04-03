@@ -208,6 +208,8 @@ for i in report['case_id']:
     count +=1
     print(count)
 now = dt.now()
-report.to_csv(str(docket) + " PIS RECON " + now.strftime("%H:%M:%S").replace(":","_")+".csv")
+report.to_csv(str(docket) + " PIS RECON " + now.strftime("%H:%M:%S").\
+       replace(":","_")+".csv", index = False)
 print(str(docket) + " PIS reconciliation complete")
-print("File saved as " + str(docket) + " PIS RECON "+ now.strftime("%H:%M:%S").replace(":","_")+".csv")
+print("File saved as " + str(docket) + " PIS RECON "+ now.strftime("%H:%M:%S").\
+       replace(":","_")+".csv")
